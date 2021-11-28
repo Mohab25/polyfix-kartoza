@@ -13,7 +13,21 @@ class polyfix():
         self.crs = ''
         self.schema = ''
 
-    def fix(self,polygon_path:str,output_path:str=''):
+    def fix(self,polygon_path:str,output_path:str='', output_name:str=''):
+        """
+            takes input path for spiked polygons and optionally output path and name, 
+            if output path is not provided, the same path as the input is used, if name
+            is not provided, it will be the input_name_corrected with the same file extension
+
+            params:
+            -----
+            polygon_path(str): a path to the file contains polygon geometry, compatible file formats
+            include gpkg, shp, GeoJSON, see https://fiona.readthedocs.io/en/latest/manual.html#data-model
+
+            output_path(str): a path to output file, if not provided the same path as input is used.
+            output_name(str): the name of the output file, if not provided, input name+ _corrected is used.
+            
+        """
         with fiona.open(polygon_path) as f:
             self.driver = f.driver
             self.crs = f.crs
@@ -21,17 +35,27 @@ class polyfix():
             features = list(f)
             self.full_features_description=features
             self.handle_multipart_features(features)
+            file_output_name = ''
             if output_path=='':
                 output_path_parent = PurePosixPath(polygon_path).parent
                 suffix = PurePosixPath(polygon_path).suffixes[0]
-                stem = PurePosixPath(polygon_path).stem
-                output_path = PurePosixPath(output_path_parent).joinpath(f'{stem}_corrected{suffix}')
+                if output_name == '':
+                    stem = PurePosixPath(polygon_path).stem
+                    file_output_name = stem+'_corrected'
+                else:
+                    file_output_name = output_name
+                output_path = PurePosixPath(output_path_parent).joinpath(f'{file_output_name}{suffix}')
             self.output_to_file(self.full_features_description, output_path)
 
 
     def output_to_file(self, output, output_path):
         """
-            outputs the refined geometry to a file with the same path and different name.
+            outputs the refined geometry to a file.
+
+            params:
+            -----
+            output (collection): objects holding spatial data to be output to a file
+            output_path(str): a path holds the information about the output file (path, name and extension)
         """
         output_path = str(output_path)
         
@@ -41,11 +65,11 @@ class polyfix():
 
     def handle_multipart_features(self,features):
         """
-            takes a list of features and loop through each while applying other functions
+            handles the presence of multipart geometries within the data via deconstructing to single parts.
 
             params:
             -----
-            features (list): list of objects representing features read by fiona
+            features (list): list of objects representing features read from fiona lib.
         """
         for feat in features:
             geometry_objects_with_ids =  self.get_single_parts(feat) # this can have a length of 1
@@ -54,11 +78,11 @@ class polyfix():
 
     def get_single_parts(self,feature)->list:
             """
-                takes a multipart geometry feature -read by fiona- and returns a list of it's parts
+                returns a list of single part geometry from multipart input.
 
                 params:
                 -----
-                multipart (obj): and object holding the multipart geometry 
+                multipart (obj): and object holding the multipart geometry. 
             """
             feature_id = feature['id']
             
@@ -78,7 +102,12 @@ class polyfix():
 
     def link_geometries_to_id(geometries:list, feature_id):
         """
-            link geometries deconstructed by shapely with and id for further retrieval
+            link geometries deconstructed by shapely with and ids for further ease of retrieval
+
+            params:
+            -----
+            geometries(list): list of single part geometries.
+            feature_id(int): an integer property of the input geometry. 
         """
         ob_list = []
         for geom in geometries:
@@ -89,11 +118,10 @@ class polyfix():
 
     def apply_fixer(self,geometry_objects:list):
         """
-            check the validity of geometries and call fixers if the geometry is not valid
-
+            loops through geometry_objects and pass them to simple_spikes_fix 
             params:
             -----
-            geometries (list): list of geometries (using shapely constructs)  
+            geometry_objects (list): list of geometries each accompanied by an id.  
         """
         for g in geometry_objects:
             self.simple_spikes_fix(g,10)
@@ -101,8 +129,9 @@ class polyfix():
 
     def simple_spikes_fix(self,geometry_object,tolerance_value:float):
         """
-            iterate over the polygon coords, compare distances between points
-
+            iterates over polygon objects coordinates and compares distances between points
+            if the distance is greater than tolerance_value, it will be considered as a spike.
+            
             params:
             -----
             geometry (shape): shapely geometry (polygon)
@@ -124,7 +153,13 @@ class polyfix():
 
     def remove_spikes(self, id, geometry_exterior_coords:list, spikes:list):
         """
-            remove spike points from the geometry definition
+            remove spike points (passed as an input) from the original data
+
+            params:
+            -----
+            id(int): unique identifier for each geometry -- input with the data.
+            geometry_exterior_coords(list): list of coordinates compared with spikes coords.
+            spikes(list): list of spike points.
         """
         for i in spikes:
             if i in geometry_exterior_coords:
@@ -133,15 +168,18 @@ class polyfix():
         self.refine_geoms(id,[geometry_exterior_coords])
 
 
-
     def refine_geoms(self,id,new_coords:list):
         """
-            construct new geometries
+            construct new geometry
+
+            params
+            -----
+            id(int): unique identifier for each geometry -- input with the data.
+            new_coords(list): new coordinate without spikes for constructing new geometries.
         """
         for i in self.full_features_description:
             if i['id'] == id:
                 i['geometry']['coordinates'] = new_coords
-
 
 
 f = polyfix()
