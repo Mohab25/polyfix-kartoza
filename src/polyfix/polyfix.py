@@ -5,7 +5,26 @@ from pathlib import PurePosixPath
 from math import sqrt
 
 
-class polyfix():
+def fix(polygon_path:str,output_path:str='', output_name:str=''):
+    """
+        creates polyfix object and call it's fix method,
+        takes input path for spiked polygons and optionally output path and name, 
+            if output path is not provided, the same path as the input is used, if name
+            is not provided, it will be the input_name_corrected with the same file extension
+
+            params:
+            -----
+            polygon_path(str): a path to the file contains polygon geometry, compatible file formats
+            include gpkg, shp, GeoJSON, see https://fiona.readthedocs.io/en/latest/manual.html#data-model
+
+            output_path(str): a path to output file, if not provided the same path as input is used.
+            output_name(str): the name of the output file, if not provided, input name+ _corrected is used.
+            
+    """
+    polyfix = Polyfix()
+    polyfix.fix(polygon_path, output_path, output_name)
+
+class Polyfix():
     def __init__(self) -> None:
         self.output_path = ''
         self.full_features_description = []
@@ -180,7 +199,3 @@ class polyfix():
         for i in self.full_features_description:
             if i['id'] == id:
                 i['geometry']['coordinates'] = new_coords
-
-
-f = polyfix()
-f.fix('/home/mohab/Main Folder/Projects/Kartoza/libs training/spiky-polygons.gpkg')
