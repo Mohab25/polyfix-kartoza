@@ -2,6 +2,24 @@
 
 fixing 'spikes' with polygon geometries
 
+# Installation
+
+use the following command to install the lib
+
+~~~bash
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple kartoza-polyfix==0.1.4.3
+~~~
+
+# Usage
+
+the library API defines only one method "fix", used to fix the spiked geometry
+
+~~~py
+from polyfix import fix
+fix('file_path')
+~~~
+
+for the implementation of fix and other options, see [fix](#fix) 
 # Implementation
 
 ## class polyfix

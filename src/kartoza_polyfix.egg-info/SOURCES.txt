@@ -1,0 +1,10 @@
+README.md
+pyproject.toml
+setup.py
+src/kartoza_polyfix.egg-info/PKG-INFO
+src/kartoza_polyfix.egg-info/SOURCES.txt
+src/kartoza_polyfix.egg-info/dependency_links.txt
+src/kartoza_polyfix.egg-info/requires.txt
+src/kartoza_polyfix.egg-info/top_level.txt
+src/polyfix/__init__.py
+src/polyfix/polyfix.py

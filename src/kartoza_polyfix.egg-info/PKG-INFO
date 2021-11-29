@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: kartoza-polyfix
+Version: 0.1.4.3
+Summary: a python package to fix polygon spikes
+Home-page: UNKNOWN
+Author: kartoza
+License: UNKNOWN
+Platform: UNKNOWN
+
+a python package to fix polygon spikes, built on top of fiona and shapely
+
