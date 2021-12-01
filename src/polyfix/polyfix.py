@@ -1,7 +1,7 @@
 from math import sqrt
-from .angleFix import TriParis
 from .polyfix_io import polyfixIO
 from .geometry_handler import geomHandler
+from .fixers import Fixer
 
 def fix(polygon_path: str, tolerance_value: float, output_path: str = '', output_name: str = ''):
     """
@@ -18,7 +18,7 @@ class Polyfix():
         self.crs = ''
         self.schema = ''
 
-    def fix(self, polygon_path: str, tolerance_value: float, output_path: str = '',
+    def fix(self, polygon_path: str, tolerance_value: float, algorithm_code: int = 2, output_path: str = '',
             output_name: str = ''):
         """
             takes input path for spiked polygons and optionally
@@ -31,7 +31,13 @@ class Polyfix():
             polygon_path(str): a path to the file contains polygon geometry,
             compatible file formats include gpkg, shp, GeoJSON,
             see https://fiona.readthedocs.io/en/latest/manual.html#data-model
-
+            tolerance_value(float): value of the threshold upon which
+            spikes are defined, according to algorithm type, the tolerance
+            can either be an angle threshold (in degrees), or a distance 
+            threshold (map unit).
+            algorithm_code: the algorithm to be used to identify and remove
+            spikes, currently two algorithms are used, based on distance
+            (code 1), or based on angles (code 2 - default).
             output_path(str): a path to output file, if not provided the same
             path as input is used.
             output_name(str): the name of the output file, if not provided,
@@ -39,101 +45,33 @@ class Polyfix():
         """
         io_control = polyfixIO(polygon_path)
         features = io_control.get_features()
-        self.input_features = io_control.get_input_features()
-        self.handle_multipart_features(features, tolerance_value)
+        self.input_features = io_control.get_unique_input_features()
+        self.handle_multipart_features(features, tolerance_value, algorithm_code)
         io_control.output_to_file(self.output_features, output_path, output_name)
 
-    def handle_multipart_features(self, features, tolerance_value):
+    def handle_multipart_features(self, features: list, tolerance_value: float, algorithm_code: int):
         """
-            handles the presence of multipart geometries
-            within the data via deconstructing to
-            single parts.
-
+            deconstruct multipart geometries into single 
+            parts for futher processing.
             params:
             -----
-            features (list): list of objects representing
-            features read from fiona lib.
+            features (list): list of geo-features
+            as they are read from .gpkg file
+            tolerance_value(float): the value
+            which will be used as a threshold
+            for removing spikes.
+            algorithm_code: an integer that defines
+            which algorithm will be used for removing
+            spikes
         """
         geom_handler = geomHandler()
         for index, feat in enumerate(features, start = 0):
             geometry_objects_with_ids = geom_handler.get_single_parts(feat, index)
-            self.apply_fixer(geometry_objects_with_ids, tolerance_value)
+            fixer = Fixer()
+            new_geom_ob = fixer.apply_fixer(geometry_objects_with_ids, tolerance_value, algorithm_code)
+            self.refine_output_geom(new_geom_ob)
 
-    def apply_fixer(self, geometry_objects: list, tolerance_value, algo: int = 2):
-        """
-            loops through geometry_objects and pass them
-            to simple_spikes_fix method.
-
-            params:
-            -----
-            geometry_objects (list): list of geometries,
-            each accompanied by an id.
-        """
-        for g in geometry_objects:
-            if algo == 2:
-                self.angle_fix(g, tolerance_value)
-            else:
-                self.simple_spikes_fix(g, tolerance_value)
-
-    def simple_spikes_fix(self, geometry_object, tolerance_value: float):
-        """
-            iterates over polygon objects coordinates
-            and compares distances between points
-            if the distance is greater than tolerance_value,
-            it will be considered as a spike.
-
-            params:
-            -----
-            geometry (shape): shapely geometry (polygon)
-            tolerance (float): tolerance value -given according
-            to data crs-, if the distance between a pair of
-            exterior points is larger than the tolerance value,
-            it is considered a spike
-        """
-        id = geometry_object['id']
-        ex = list(geometry_object['geom'].exterior.coords)
-        spikes, dist = [], 0
-        ex_length = len(ex)
-        for i in range(ex_length-2):
-            current = i
-            next = i+1
-            dist = sqrt(pow(ex[current][0]-ex[next][0], 2)+pow(ex[current][1]-ex[next][1], 2))
-            if dist > tolerance_value:
-                spikes.append(ex[next])
-        self.remove_spikes(id, ex, spikes)
-
-    def angle_fix(self, geometry_object, tolerance_value: float):
-        """"
-            apply another algorithm based on the angle
-            between current point and next/prev points
-        """
-        id = geometry_object['id']
-        data = list(geometry_object['geom'].exterior.coords)
-        tri = TriParis(data)
-        tri.create_nodes()
-        spikes = tri.get_spikes(tolerance_value)
-        self.remove_spikes(id, data, spikes)
-
-    def remove_spikes(self, id, geometry_exterior_coords: list, spikes: list):
-        """
-        remove spike points (passed as an input) from
-        the original data
-
-        params:
-        -----
-        id(int): unique identifier for each geometry
-        -- input with the data.
-        geometry_exterior_coords(list): list of coordinates
-        compared with spikes coords.
-        spikes(list): list of spike points.
-        """
-        for i in spikes:
-            if i in geometry_exterior_coords:
-                geometry_exterior_coords.remove(i)
-
-        self.refine_geoms(id, [geometry_exterior_coords])
-
-    def refine_geoms(self, id, new_coords: list):
+    def refine_output_geom(self, new_geom: object):
         """
         construct new geometry
 
@@ -146,7 +84,7 @@ class Polyfix():
         new geometries.
         """
         for i in self.input_features:
-            if i['id'] == id:
-                i['feat']['geometry']['coordinates'] = new_coords
+            if i['id'] == new_geom['id']:
+                i['feat']['geometry']['coordinates'] = new_geom['new_coords']
             
             self.output_features.append(i['feat'])
