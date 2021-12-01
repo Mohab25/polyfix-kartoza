@@ -16,7 +16,7 @@ class polyfixIO():
             self.features = list(f)
             return self.features
 
-    def get_input_features(self):
+    def get__unique_input_features(self):
         input_features = []
         [input_features.append({'id':index, 'feat': i}) for index, i in enumerate(self.features)]
         return input_features

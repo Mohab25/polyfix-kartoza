@@ -12,8 +12,9 @@ class geomHandler():
 
                 params:
                 -----
-                multipart (obj): and object holding the
+                feature (obj): an object holding the
                 multipart geometry.
+                index (int): a unique number attached to the geometries.
             """
             feature_id = index
             if feature['geometry']['type'] == 'Polygon': 

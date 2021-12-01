@@ -13,6 +13,13 @@ class TriParis():
         self.nodesArray = []
     
     def create_nodes(self):
+        """
+            creates a linked list of Node objects.
+
+            params:
+            -----
+            None
+        """
         for index, point in enumerate(self.data[0:-1],start=0):
             node = Node(point)
             node.index = index
@@ -30,7 +37,19 @@ class TriParis():
             self.nodesArray.append(node)
 
 
-    def get_spikes(self,threshold):
+    def get_spikes(self,threshold: float) -> list:
+        """
+            creates angle between each node and it's 
+            next and previous nodes, if the angle is
+            less than a given threshold, the node
+            is considered a spike.
+
+            params:
+            -----
+            threshold(float): the minimum angle
+            afterwhich the value is considered
+            a spike 
+        """
         angles = []
         spikes = []
         for i in self.nodesArray:
