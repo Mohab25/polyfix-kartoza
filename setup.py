@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='kartoza_polyfix',
-    version='0.1.4.3',
+    version='0.1.6.2',
     description='a python package to fix polygon spikes',
     long_description='a python package to fix polygon spikes, built on top of fiona and shapely',
     author='kartoza',
