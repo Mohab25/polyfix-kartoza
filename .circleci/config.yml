@@ -5,9 +5,8 @@ jobs:
       - image: cimg/python:3.9
       - steps:
         - checkout
-        - run: |
-          pip install pytest
-          pytest -s
+        - run: pip install pytest
+        - run: pytest -s
 workflows:
   test:
     jobs:
