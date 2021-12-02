@@ -358,3 +358,30 @@ threshold(float): the minimum angle
 after which the value is considered
 a spike 
 ~~~
+
+# Technical Description
+
+## Workflow Description
+
+the figure below illustrates the workflow of the tool which begins with input data, fiona is used to read the data from source, the lib can handle a lot of spatial formats (.gpkg, .shp, geojson ..etc.), once the data is input the geographic features are extracted from it, if the file is found to be empty an exception is raised otherwise a data construct is used to hold features (dictionary with enumerated index to give each feature a unique identifier - as the original may not have one), the workflow proceeds to examine wether or not there is a multi geometry, if multi geometry is present with the data, it get deconstructed to simple geometry where each part has the same unique identifier which will be used on later stage to combine the multipart, the workflow then proceeds to apply one of the two algorithms (see below) used to identify spikes and remove them, once the algorithms are applied new spikes-free geometries are generated and output to a file.
+![workflow](figures/transparent.png)
+figure 1: General workflow of the tool.
+
+the tool doesn't focus on internal spikes because it seems geometrically impossible to have one, spikes will be considered to be external see figure below:
+![workflow](figures/internal_rings.png)
+figure 2: internal spikes automatically becomes external
+
+## Spikes removal algorithms
+
+the tool uses two algorithms to define spikes in polygons geometries, the first takes three points at a time and creates two lines between the middle point and the two other points, then calculates an angles between these two lines, if the angle is less than a given threshold then the middle point is considered a spike and removed from the data, the other algorithm calculates the distance between each point and it's successor, if the distance pass a given threshold the next point is considered a spike and removed from the data.
+
+## Technologies used
+
+the tool uses two main libraries, fiona is used to read spatial data and create spatial files, it can work with different vector spatial formats, it uses ogr underneath to achieve it's results, ogr was first considered for read/write spatial files but fiona is very easy to be use, the other main library is shapely, it's mainly used to construct/deconstruct and correct geometries, shapely provides a lot of other functionalities regarded to spatial analysis.
+
+## Results
+![Kartooza geoms1](figures/spike1.png)![Kartooza geoms2](figures/spike2.png)
+
+### corrected
+
+![Kartooza geoms3](figures/spike3.png)
