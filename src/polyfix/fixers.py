@@ -1,5 +1,6 @@
 from math import sqrt
-from .angleFix import TriParis
+from angleFix import TriPairs
+
 
 class Fixer():
 
@@ -53,21 +54,21 @@ class Fixer():
         """"
             apply an algorithm based on the angle
             between current point and next/prev points,
-            if the angle is greater than a threshold 
+            if the angle is greater than a threshold
             value the middle point is considered a spike.
 
             params:
             -----
             geometry (shape): shapely geometry (polygon)
-            tolerance_value (float): tolerance value 
-            -given according to data crs-, 
+            tolerance_value (float): tolerance value
+            -given according to data crs-,
             if the distance between a pair of exterior
             points is larger than the tolerance value,
-            it is considered a spike. 
+            it is considered a spike.
         """
         id = geometry_object['id']
         data = list(geometry_object['geom'].exterior.coords)
-        tri = TriParis(data)
+        tri = TriPairs(data)
         tri.create_nodes()
         spikes = tri.get_spikes(tolerance_value)
         return self.remove_spikes(id, data, spikes)
@@ -89,4 +90,4 @@ class Fixer():
             if i in geometry_exterior_coords:
                 geometry_exterior_coords.remove(i)
 
-        return {"id": id, "new_coords":[geometry_exterior_coords]}
+        return {"id": id, "new_coords": [geometry_exterior_coords]}

@@ -68,7 +68,7 @@ None
 ### output_to_file
 
 ~~~py
-output_to_file(self, output, output_path :str = '', output_name :str = '' )
+output_to_file(self, output, output_path :Path = '', output_name :str = '' )
 ~~~
 
 output newly created and corrected geographic features to a file
@@ -78,7 +78,7 @@ params:
 -----
 output (collection): objects holding spatial data
 which to be output to a file
-output_path(str): a path holds the information about
+output_path(Path): a path holds the information about
 the output file (path, name and extension)
 ~~~
 
@@ -355,6 +355,6 @@ is considered a spike.
 params:
 -----
 threshold(float): the minimum angle
-afterwhich the value is considered
+after which the value is considered
 a spike 
 ~~~
