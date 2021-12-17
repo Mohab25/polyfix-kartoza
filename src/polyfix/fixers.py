@@ -1,5 +1,5 @@
 from math import sqrt
-from .angleFix import TriPairs
+from angleFix import TriPairs
 
 
 class Fixer():

@@ -10,5 +10,5 @@ src/polyfix/__init__.py
 src/polyfix/angleFix.py
 src/polyfix/fixers.py
 src/polyfix/geometry_handler.py
-src/polyfix/polyfix.py
 src/polyfix/polyfix_io.py
+src/polyfix/polyfixer.py

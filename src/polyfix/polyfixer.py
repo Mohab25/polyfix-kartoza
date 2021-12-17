@@ -1,6 +1,6 @@
-from .polyfix_io import polyfixIO
-from .geometry_handler import geomHandler
-from .fixers import Fixer
+from polyfix_io import polyfixIO
+from geometry_handler import geomHandler
+from fixers import Fixer
 
 
 def fix(polygon_path: str, tolerance_value: float,
