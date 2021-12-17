@@ -7,7 +7,7 @@ fixing 'spikes' with polygon geometries
 use the following command to install the lib
 
 ~~~bash
-pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple kartoza-polyfix==0.1.6.2
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple kartoza-polyfix==0.1.6.3
 ~~~
 
 # Usage
