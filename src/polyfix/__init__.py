@@ -1,2 +1,2 @@
-from .polyfix import fix
+from .polyfixer import fix
 __all__ = ['fix']

@@ -4,7 +4,7 @@ from pathlib import Path
 package_path = Path(__file__).parent.parent.joinpath('src/polyfix')
 sys.path.append(str(package_path))
 
-from polyfix import Polyfix
+from polyfixer import Polyfix
 from polyfix_io import polyfixIO
 
 polyfix_ob = Polyfix()
